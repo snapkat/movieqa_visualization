@@ -1,0 +1,10 @@
+#junk
+*.DS_Store
+*nohup.out
+
+#compiled
+*.pyc
+
+#Libraries
+bottle.*
+MovieQA/
