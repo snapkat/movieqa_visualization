@@ -5,6 +5,9 @@ Python 2.7
 bottle    
 gevent 
 
+numpy
+pysrt
+
 ## You need the MovieQA data files.
 
 ## To start server at port 8088:  
