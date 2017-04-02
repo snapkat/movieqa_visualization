@@ -19,6 +19,11 @@ function select_word(){
 	window.location.href = $( this ).attr('name');
 }
 
+function go_home(){
+	window.location.href = '/';
+}
+
 $(".plot-word").click(select_word);
+$("#poster").click(go_home);
 
 get_poster()
