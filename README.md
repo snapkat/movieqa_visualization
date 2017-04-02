@@ -1,11 +1,11 @@
 # MovieQA Visualization
 Python 2.7  
 
-##Dependencies
+## Dependencies
 bottle    
 gevent 
 
-##You need the MovieQA data files.
+## You need the MovieQA data files.
 
-##To start server at port 8088:  
+## To start server at port 8088:  
 python server.py
