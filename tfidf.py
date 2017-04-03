@@ -109,12 +109,14 @@ class TfIdf(object):
     def getCleanPlot(self, movieKey):
         currMoviePlots = self.story[movieKey]
         cleanSentence = []
+        originalSentence = []
         for currPlot in currMoviePlots:
-            currSentence = self.tokenizer.tokenizeAlphanumericLowerList(currPlot)
-            for word in currSentence:
+            currOrig, currSentence = self.tokenizer.tokenizedAlphanumericPairs(currPlot)
+            for i, word in enumerate(currSentence):
                 if self.tfIdfMatrix.contains(word, movieKey):
                     cleanSentence.append(word)
-        return cleanSentence
+                    originalSentence.append(currOrig[i])
+        return originalSentence, cleanSentence
 
     def getWordVectors(self, movieKey, listOfWords):
         arr = []

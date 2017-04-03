@@ -88,12 +88,12 @@ def tfidf_plot(imdb_key, query_word):
     if not imdb_key in imdb_keys:
         return bottle.template("key_not_found", imdb_key=imdb_key)
 
-    cleanPlot = tfidf.getCleanPlot(imdb_key)
+    origPlot, cleanPlot = tfidf.getCleanPlot(imdb_key)
     weights = tfidf.getWordVectors(imdb_key, cleanPlot)
     weights = np.rint(weights/np.max(weights)*255) # numWord * 1
     weights = np.reshape(weights, (-1, 1))
-    params = {'imdb_key':imdb_key, 'plot':cleanPlot, 'clean_words':cleanPlot , 'weights':weights, 
-              'query_word':w2v.tokenized_as(query_word), 'rand': random.random(), 'w2v': False}
+    params = {'imdb_key':imdb_key, 'plot':origPlot, 'clean_words':cleanPlot , 'weights':weights, 
+              'query_word':None, 'rand': random.random(), 'w2v': False}
     return bottle.template("plot_display", **params)
 
 
