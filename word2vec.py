@@ -4,8 +4,8 @@ import pickle
 class Word2Vec(object):
     def __init__(self, extension='plt', postprocess=False):
         # Filenames & Constants
-        ID_MAP_FILE = "id_map_%s.pkl" % extension
-        EMBED_FILE = "embed_%s.npz" % extension
+        ID_MAP_FILE = "data/id_map_%s.pkl" % extension
+        EMBED_FILE = "data/embed_%s.npz" % extension
         self.SYMBOLS_TO_REMOVE = '"#$%&()*+,/:;<=>@[\]^_`{|}~-' + "'?!"
 
         # Get word2vec embeddings
@@ -19,6 +19,7 @@ class Word2Vec(object):
         # Get the word to word-id mappings
         # Basically, this is a map and isn't train
         self.id_map = self.load_obj(ID_MAP_FILE) # (numWords *  embeddingDimensions)
+        self.word_map = dict((v,k) for k,v in self.id_map.iteritems())
 
         if postprocess:
             self._postprocess()
@@ -26,6 +27,17 @@ class Word2Vec(object):
             print(self.embeddings.shape)
             print("Self ID Map") # A dictionary
             print(len(self.id_map))
+
+    def n_nearest(self, word, n=6):
+        q_idx = self.id_map[word]
+        weights = np.dot(self.embeddings, self.embeddings[q_idx])
+        top_n = list(np.argsort(weights)[-n-1:])
+        top_n.reverse()
+        for i in top_n:
+            if i == q_idx:
+                top_n.remove(q_idx)
+        top_n_words = [self.word_map[i] for i in top_n[:n]]
+        return top_n_words
 
     def getNumVocabulary(self):
         return len(self.id_map)
@@ -111,7 +123,7 @@ class Word2Vec(object):
     def get_word_embeddings(self, words):
         word_ids = self.tokenize_text(words)
         embeddings = self.embeddings[word_ids]
-        return self.normalize(embeddings)
+        return embeddings
 
     def get_sentence_vector(self, sentence):
         clean_sentence = self._filter_sentence(sentence)

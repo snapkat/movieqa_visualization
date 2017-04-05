@@ -19,13 +19,13 @@ mqa = MovieQA.DataLoader()
 story_raw, qa = mqa.get_story_qa_data('train', 'plot')
 imdb_keys = story_raw.keys()
 
-w2v = Word2Vec(extension='plt_mar14', postprocess=True)
+w2v = Word2Vec(extension='plt+t8', postprocess=True)
 tfidf = TfIdf(story_raw)
 
 def clean_plot(imdb_key):
     text_raw = story_raw[imdb_key]
     text = ' '.join(sentence for sentence in text_raw)
-    text = text.split()
+    text = text.lower().split()
     return text
 
 @bottle.route('/static/<filename:path>', 'GET')
@@ -60,42 +60,37 @@ def plot(algo, imdb_key, query_word=None):
     return w2v_plot(imdb_key, query_word)
 
 
-def score_tfidf(q):
-    global tfidf
-    # Sentence vectors for question, answers, plot
-    question_vec = tfidf.getSentenceVector(q.imdb_key, q.question)
-    answer_matrix = tfidf.getSentenceVectors(q.imdb_key, q.answers)
-    plot_matrix = tfidf.getSentenceVectors(
-        q.imdb_key, story_raw[q.imdb_key])
-
-    score = plot_matrix
-    '''
-    qscore = plot_matrix.dot(question_vec).reshape(-1, 1)
-    ascore = plot_matrix.dot(answer_matrix.T)
-    score = ascore + qscore
-    '''
-    return score
-
-def predict_tfidf(q):
-    global tfidf
-    score = score_tfidf(q)
-    prediction = np.unravel_index(score.argmax(), score.shape)
-    return prediction[1], prediction[0], score[prediction]
-
 def tfidf_plot(imdb_key, query_word):
-    global w2v # TEMP USELESS FOR QUERY WORD
     global tfidf
     if not imdb_key in imdb_keys:
         return bottle.template("key_not_found", imdb_key=imdb_key)
 
     origPlot, cleanPlot = tfidf.getCleanPlot(imdb_key)
     weights = tfidf.getWordVectors(imdb_key, cleanPlot)
-    weights = np.rint(weights/np.max(weights)*255) # numWord * 1
-    weights = np.reshape(weights, (-1, 1))
+    weights = weights/np.max(weights) # numWord * 1
+    top_plot_words = get_top_words(weights, cleanPlot)
+    weights = np.rint((weights**4)*255)
     params = {'imdb_key':imdb_key, 'plot':origPlot, 'clean_words':cleanPlot , 'weights':weights, 
-              'query_word':None, 'rand': random.random(), 'w2v': False}
+              'query_word':None, 'rand': random.random(), 'w2v': False, 'top_words':[], 'top_plot_words':top_plot_words}
     return bottle.template("plot_display", **params)
 
+def get_top_words(weights, clean_words, query_word=None, max_top=6):
+    '''
+    Get max_top # of words ordered with highest weights.
+    Clean_words indices should corrilate to weight indices. 
+    Query_word is not added to top words list. 
+    '''
+    sorted_idx = np.argsort(weights)
+    top_words = list()
+    i = len(sorted_idx) -1
+
+    while len(top_words)<max_top and i>=0:
+        currword = clean_words[sorted_idx[i]]
+        if not currword in top_words and currword!=query_word:
+            top_words.append(clean_words[sorted_idx[i]])
+        i-=1
+
+    return top_words
 
 def w2v_plot(imdb_key, query_word):
     if not imdb_key in imdb_keys:
@@ -105,14 +100,20 @@ def w2v_plot(imdb_key, query_word):
     plot = clean_plot(imdb_key)
 
     clean_words = w2v.clean_words(plot)
+    query_word = w2v.tokenized_as(query_word)
     query_embed = w2v.get_raw_word_embeddings([query_word])
     plot_embed = w2v.get_raw_word_embeddings(plot)
 
-    weights = np.dot(plot_embed, query_embed.T)
-    weights = np.rint(weights/np.max(weights)*255)
+    weights = np.dot(plot_embed, query_embed.T).flatten()
+    top_plot_words = get_top_words(weights, clean_words, query_word)
+    top_words = w2v.n_nearest(query_word)
 
+    # Edit weights for coloring.
+    weights = weights/np.max(weights)
+    weights = np.rint((np.reshape(weights, (-1, 1))**2)*255)
     params = {'imdb_key':imdb_key, 'plot':plot, 'clean_words':clean_words, 'weights':weights, 
-              'query_word':w2v.tokenized_as(query_word), 'rand': random.random(), 'w2v': True}
+              'query_word':query_word, 'rand': random.random(), 'w2v': True,
+              'top_plot_words':top_plot_words, 'top_words': top_words}
     return bottle.template("plot_display", **params)
 
 

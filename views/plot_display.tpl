@@ -10,11 +10,22 @@
 	<p>
 	<img id='poster' src='' class="movie-poster" align="right">
 	% for i in range(len(plot)):
-		<span name="{{clean_words[i]}}" class="plot-word" style="background-color:rgb(255,{{255-int(weights[i][0])}},{{255-int(weights[i][0])}});">{{plot[i]}} </span>
+		<span name="{{clean_words[i]}}" class="plot-word" style="background-color:rgb(255,{{255-int(weights[i])}},{{255-int(weights[i])}});">{{plot[i]}} </span>
 	% end
 	</p>
 	</div>	
-	
+	<div>
+	Most Similar Words in Plot:
+	% for word in top_plot_words:
+		[{{word}}] 
+	% end
+	</div>
+	<div>
+	Most Similar Words in Vocab:
+	% for word in top_words:
+		[{{word}}] 
+	% end
+	</div>
 	</div>
 	<script type="text/javascript" src="/static/plot_script.js?t={{rand}}"></script>
 </body>
