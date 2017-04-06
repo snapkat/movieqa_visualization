@@ -32,6 +32,9 @@ def clean_plot(imdb_key):
 def serve_pictures(filename):
     return bottle.static_file(filename, root='./static/')
 
+@bottle.route('/poster/<filename:path>', 'GET')
+def serve_pictures(filename):
+    return bottle.static_file(filename, root='./posters/')
 
 @bottle.route('/<algo>')
 @bottle.route('/<algo>/')
@@ -70,15 +73,15 @@ def tfidf_plot(imdb_key, query_word):
     weights = weights/np.max(weights) # numWord * 1
     top_plot_words = get_top_words(weights, cleanPlot)
     weights = np.rint((weights**4)*255)
-    params = {'imdb_key':imdb_key, 'plot':origPlot, 'clean_words':cleanPlot , 'weights':weights, 
+    params = {'imdb_key':imdb_key, 'plot':origPlot, 'clean_words':cleanPlot , 'weights':weights,
               'query_word':None, 'rand': random.random(), 'w2v': False, 'top_words':[], 'top_plot_words':top_plot_words}
     return bottle.template("plot_display", **params)
 
 def get_top_words(weights, clean_words, query_word=None, max_top=6):
     '''
     Get max_top # of words ordered with highest weights.
-    Clean_words indices should corrilate to weight indices. 
-    Query_word is not added to top words list. 
+    Clean_words indices should corrilate to weight indices.
+    Query_word is not added to top words list.
     '''
     sorted_idx = np.argsort(weights)
     top_words = list()
@@ -111,7 +114,7 @@ def w2v_plot(imdb_key, query_word):
     # Edit weights for coloring.
     weights = weights/np.max(weights)
     weights = np.rint((np.reshape(weights, (-1, 1))**2)*255)
-    params = {'imdb_key':imdb_key, 'plot':plot, 'clean_words':clean_words, 'weights':weights, 
+    params = {'imdb_key':imdb_key, 'plot':plot, 'clean_words':clean_words, 'weights':weights,
               'query_word':query_word, 'rand': random.random(), 'w2v': True,
               'top_plot_words':top_plot_words, 'top_words': top_words}
     return bottle.template("plot_display", **params)

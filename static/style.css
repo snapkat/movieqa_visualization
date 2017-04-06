@@ -62,6 +62,7 @@ a{
 	background-color: #333;
 	top: 0;
 	width: 100%;
+	z-index: 2;
 }
 
 #nav {
@@ -95,6 +96,7 @@ a{
 .movie-poster:hover { 
 	transform: scale(1.1); 
 	cursor: pointer;
+	z-index: 1;
 }
 
 .selected {
