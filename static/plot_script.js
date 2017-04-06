@@ -2,6 +2,10 @@
 
 var imdb_key = $('#imdb-key').html()
 
+var get_poster_local = function(){
+	$(this).attr("src", '/poster/'+ imdb_key+'.jpg');
+};
+
 function get_poster(){
 	$.ajax({
         url: 'http://www.omdbapi.com/?i=' + imdb_key,
@@ -26,4 +30,4 @@ function go_home(){
 $(".plot-word").click(select_word);
 $("#poster").click(go_home);
 
-get_poster()
+get_poster_local()
